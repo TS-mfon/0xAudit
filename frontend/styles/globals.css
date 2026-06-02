@@ -1,0 +1,102 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body {
+  background: #050505;
+  color: #f5fff9;
+}
+
+body {
+  min-height: 100vh;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::selection {
+  background: #00ff88;
+  color: #050505;
+}
+
+.panel {
+  border: 1px solid #1d2a24;
+  background: linear-gradient(180deg, rgba(11, 15, 14, 0.98), rgba(7, 9, 8, 0.98));
+  border-radius: 8px;
+}
+
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(0, 255, 136, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 136, 0.06) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.matrix-bg {
+  background:
+    radial-gradient(circle at 20% 10%, rgba(0, 255, 136, 0.14), transparent 28%),
+    linear-gradient(180deg, rgba(0, 255, 136, 0.04), rgba(5, 5, 5, 0.94)),
+    #050505;
+  position: relative;
+}
+
+.matrix-bg::before {
+  content: "010101 audit shell root exploit invariant consensus gen_call StudioNet 0xAudit";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  color: rgba(0, 255, 136, 0.08);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 18px;
+  line-height: 1.8;
+  letter-spacing: 0;
+  word-spacing: 28px;
+  transform: skewY(-5deg);
+}
+
+.terminal-window {
+  border: 1px solid #1d2a24;
+  background: rgba(5, 10, 7, 0.92);
+  border-radius: 8px;
+  box-shadow: 0 0 40px rgba(0, 255, 136, 0.09), inset 0 0 24px rgba(0, 255, 136, 0.03);
+}
+
+.terminal-scan {
+  position: relative;
+}
+
+.terminal-scan::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.02) 0,
+    rgba(255, 255, 255, 0.02) 1px,
+    transparent 1px,
+    transparent 6px
+  );
+}
+
+.scanline {
+  position: relative;
+}
+
+.scanline::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent, rgba(0, 255, 136, 0.05), transparent);
+  transform: translateY(-100%);
+  animation: scan 6s linear infinite;
+}
+
+@keyframes scan {
+  to {
+    transform: translateY(100%);
+  }
+}

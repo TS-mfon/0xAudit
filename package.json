@@ -1,0 +1,13 @@
+{
+  "name": "0xaudit",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "frontend"
+  ],
+  "scripts": {
+    "build": "npm --prefix frontend run build",
+    "typecheck": "npm --prefix frontend run typecheck",
+    "seed:audits": "node scripts/seed-test-audits.mjs"
+  }
+}
