@@ -1,12 +1,12 @@
 import Link from "next/link";
-import { getAuditStats, getRecentAudits } from "../lib/genlayer";
+import { getAuditStats, getRecentAuditSummaries } from "../lib/genlayer";
 import { verdictTone } from "../lib/theme";
 
 export const dynamic = "force-dynamic";
 
 async function loadData() {
   try {
-    const [stats, audits] = await Promise.all([getAuditStats(), getRecentAudits(6)]);
+    const [stats, audits] = await Promise.all([getAuditStats(), getRecentAuditSummaries(5)]);
     return { stats: stats as any, audits };
   } catch {
     return { stats: null, audits: [] };
@@ -15,69 +15,91 @@ async function loadData() {
 
 export default async function HomePage() {
   const { stats, audits } = await loadData();
+  const totalAudits = String(stats?.total_audits ?? "--");
+  const totalFindings = String(stats?.total_findings ?? "--");
+
   return (
-    <main className="bg-obsidian">
-      <section className="matrix-bg terminal-scan relative overflow-hidden border-b border-panel-border">
-        <div className="mx-auto grid max-w-7xl gap-10 px-4 py-16 lg:grid-cols-[1.08fr_0.92fr] lg:py-20">
-          <div>
-            <p className="font-mono text-sm uppercase tracking-widest text-strong">$ ./0xaudit --mode decentralized</p>
-            <h1 className="mt-5 max-w-4xl font-mono text-5xl font-black leading-tight text-foreground md:text-7xl">Paste Contract. Execute Audit. Read Consensus.</h1>
-            <p className="mt-6 max-w-2xl text-lg text-foreground-muted">
-              0xAudit is a GenLayer-native security console for Solidity contracts. Three reasoning agents attack the code, inspect architecture, test invariants, and return a validator-backed verdict from StudioNet.
-            </p>
-            <p className="mt-4 max-w-2xl text-lg text-foreground-muted">
-              No sales call. No static checklist theater. Just contract code, adversarial reasoning, and a traceable audit result.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/audit" className="rounded border border-strong bg-strong px-5 py-3 font-mono font-bold text-obsidian">Run paste audit</Link>
-              <Link href="/dashboard" className="rounded border border-panel-border px-5 py-3 font-mono text-foreground">View activity</Link>
+    <main className="relative z-10">
+      <section className="mx-auto grid max-w-7xl gap-6 px-4 py-8 lg:grid-cols-[1.05fr_0.95fr] lg:py-14">
+        <div className="terminal-card p-5 md:p-8">
+          <p className="terminal-label">$ ./boot --target studionet --interface cyber_terminal</p>
+          <h1 className="typewriter mt-6 max-w-5xl text-3xl font-black uppercase leading-tight text-[#00FF41] md:text-5xl">
+            Paste Contract. Execute Audit. Read Consensus.
+          </h1>
+          <p className="mt-6 max-w-2xl text-sm leading-7 text-[#00FF41]/70 md:text-base">
+            0xAudit is a live GenLayer security console. Paste Solidity, trigger the platform signer, and watch the contract-backed audit feed surface consensus from Adversary, Architect, and Math agents.
+          </p>
+          <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+            <Link href="/audit" className="glitch-button" data-text="RUN_PASTE_AUDIT">RUN_PASTE_AUDIT</Link>
+            <Link href="/dashboard" className="ghost-button">VIEW_ACTIVITY</Link>
+          </div>
+          <div className="mt-8 grid gap-3 sm:grid-cols-3">
+            {[
+              ["NETWORK", "STUDIONET", "[READY]"],
+              ["ENGINE", "0x44bD...301D", "[LIVE]"],
+              ["MODE", "PASTE_ONLY", "[ARMED]"],
+            ].map(([label, value, state]) => (
+              <div key={label} className="border border-[#00FF41]/45 bg-black/60 p-3">
+                <p className="terminal-label">{label}</p>
+                <p className="mt-2 break-all text-sm font-bold">{value}</p>
+                <p className="mt-2 text-xs text-[#00FF41]/70">{state}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <aside className="space-y-4">
+          <div className="terminal-card p-4">
+            <div className="flex items-center justify-between border-b border-[#00FF41]/40 pb-3">
+              <p className="terminal-title text-sm">STUDIONET_CONNECTIVITY</p>
+              <span className="status-pill">[READY]</span>
+            </div>
+            <div className="mt-4 grid grid-cols-2 gap-3">
+              <div className="border border-[#00FF41]/35 bg-black p-4">
+                <p className="terminal-label">AUDIT_COUNT</p>
+                <p className="mt-2 text-4xl font-black">{totalAudits}</p>
+              </div>
+              <div className="border border-[#00FF41]/35 bg-black p-4">
+                <p className="terminal-label">FINDINGS</p>
+                <p className="mt-2 text-4xl font-black critical-text">{totalFindings}</p>
+              </div>
             </div>
           </div>
-          <div className="terminal-window p-0">
-            <div className="border-b border-panel-border px-4 py-3 font-mono text-xs text-foreground-muted">root@0xaudit:~/scan</div>
-            <div className="space-y-4 p-5 font-mono text-sm">
-              <p className="text-strong">$ boot agent panel</p>
-              <p className="text-foreground-muted">ADVERSARY .... exploit surface mapped</p>
-              <p className="text-foreground-muted">ARCHITECT .... protocol topology checked</p>
-              <p className="text-foreground-muted">MATH ........ invariants extracted</p>
-              <p className="text-strong">$ studio stats</p>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="rounded border border-panel-border bg-obsidian p-3">audits<br /><span className="text-strong">{String(stats?.total_audits ?? 0)}</span></div>
-                <div className="rounded border border-panel-border bg-obsidian p-3">findings<br /><span className="text-strong">{String(stats?.total_findings ?? 0)}</span></div>
-              </div>
-              <p className="text-strong">$ compare --target traditional-audit</p>
+
+          <div className="terminal-card p-4">
+            <p className="terminal-title text-sm">$ systemctl status agent-panel</p>
+            <div className="mt-4 space-y-3 text-sm">
               {[
-                ["Turnaround", "weeks", "minutes"],
-                ["Reasoning", "single reviewer", "3-agent panel"],
-                ["Provenance", "private report", "contract-backed state"],
-                ["Workflow", "engagement queue", "paste and run"],
-              ].map(([k, oldWay, newWay]) => (
-                <div key={k} className="grid grid-cols-3 gap-2 border-t border-panel-border pt-2 text-xs">
-                  <span className="text-foreground">{k}</span><span className="text-foreground-muted">{oldWay}</span><span className="text-strong">{newWay}</span>
-                </div>
+                "ADVERSARY.service .... exploit_surface.loaded [0.12ms]",
+                "ARCHITECT.service .... topology_graph.ready [0.18ms]",
+                "MATH.service .... invariant_solver.ready [0.09ms]",
+                "CONSENSUS.bus .... validator_quorum.synced [0.31ms]",
+              ].map((line) => (
+                <p key={line} className="boot-row text-[#00FF41]/75">{line}</p>
               ))}
             </div>
           </div>
-        </div>
+        </aside>
       </section>
-      <section className="mx-auto max-w-7xl px-4 py-12">
-        <div className="mb-5 flex items-center justify-between gap-4">
-          <h2 className="font-mono text-2xl font-black">Live StudioNet Activity</h2>
-          <Link href="/audit" className="font-mono text-sm text-strong">submit new audit</Link>
+
+      <section className="mx-auto max-w-7xl px-4 pb-12">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="terminal-title text-xl">LIVE_ACTIVITY_STREAM</h2>
+          <Link href="/dashboard" className="text-xs font-bold text-[#00FF41]/70 hover:text-[#00FF41]">OPEN_FEED</Link>
         </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
           {audits.map((audit) => (
-            <Link key={audit.audit_id} href={`/audit/${audit.audit_id}`} className="panel block p-5 hover:border-strong/50">
-              <div className="flex items-center justify-between gap-3">
-                <span className={`rounded border px-2 py-1 font-mono text-xs ${verdictTone(audit.verdict)}`}>{audit.verdict} {audit.score}</span>
-                <span className="font-mono text-xs text-foreground-muted">{audit.findings_count} findings</span>
+            <Link key={audit.audit_id} href={`/audit/${audit.audit_id}`} className="terminal-card block p-4">
+              <div className="flex items-center justify-between gap-2">
+                <span className={`status-pill ${verdictTone(audit.verdict)}`}>{audit.verdict || "PENDING"}</span>
+                <span className="text-xs text-[#00FF41]/55">#{audit.timestamp}</span>
               </div>
-              <p className="mt-4 break-all font-mono text-xs text-foreground-muted">{audit.contract_hash}</p>
-              <p className="mt-3 text-sm text-foreground-muted">{audit.suggestions[0] || "No tightening suggestions recorded."}</p>
+              <p className="mt-4 break-all text-xs text-[#00FF41]/70">{audit.audit_id.slice(0, 18)}...</p>
+              <p className="mt-3 text-xs text-[#00FF41]/55">{audit.findings_count} findings // score {audit.score}</p>
             </Link>
           ))}
           {!audits.length && (
-            <div className="panel p-5 font-mono text-sm text-foreground-muted">No StudioNet audits are readable yet. Deploy and seed the contract to populate this terminal.</div>
+            <div className="terminal-card p-4 text-sm text-[#00FF41]/65">NO_READABLE_ACTIVITY // RETRYING_STUDIONET</div>
           )}
         </div>
       </section>

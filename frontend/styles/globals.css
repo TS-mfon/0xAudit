@@ -2,101 +2,288 @@
 @tailwind components;
 @tailwind utilities;
 
-html, body {
-  background: #050505;
-  color: #f5fff9;
-}
-
-body {
-  min-height: 100vh;
+:root {
+  --black: #000000;
+  --green: #00ff41;
+  --green-soft: rgba(0, 255, 65, 0.12);
+  --green-dim: rgba(0, 255, 65, 0.55);
+  --gray: #75806f;
+  --red: #ff0000;
+  --amber: #ffb800;
+  --panel: rgba(2, 14, 5, 0.72);
+  --line: rgba(0, 255, 65, 0.62);
 }
 
 * {
   box-sizing: border-box;
 }
 
-::selection {
-  background: #00ff88;
-  color: #050505;
+html,
+body {
+  min-height: 100vh;
+  background: var(--black);
+  color: var(--green);
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
 }
 
-.panel {
-  border: 1px solid #1d2a24;
-  background: linear-gradient(180deg, rgba(11, 15, 14, 0.98), rgba(7, 9, 8, 0.98));
-  border-radius: 8px;
+body {
+  overflow-x: hidden;
+  text-transform: none;
 }
 
-.grid-bg {
-  background-image:
-    linear-gradient(rgba(0, 255, 136, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 255, 136, 0.06) 1px, transparent 1px);
-  background-size: 32px 32px;
+body::before,
+body::after {
+  content: "";
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 80;
 }
 
-.matrix-bg {
+body::before {
   background:
-    radial-gradient(circle at 20% 10%, rgba(0, 255, 136, 0.14), transparent 28%),
-    linear-gradient(180deg, rgba(0, 255, 136, 0.04), rgba(5, 5, 5, 0.94)),
-    #050505;
-  position: relative;
+    linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+    linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+  background-size: 100% 4px, 6px 100%;
+  mix-blend-mode: screen;
+  opacity: 0.42;
 }
 
-.matrix-bg::before {
-  content: "010101 audit shell root exploit invariant consensus gen_call StudioNet 0xAudit";
+body::after {
+  background: linear-gradient(180deg, transparent 0%, rgba(0, 255, 65, 0.14) 50%, transparent 100%);
+  height: 34vh;
+  animation: crt-scan 7s linear infinite;
+  opacity: 0.35;
+}
+
+::selection {
+  background: var(--green);
+  color: var(--black);
+}
+
+a,
+button {
+  letter-spacing: 0;
+}
+
+button {
+  font-family: inherit;
+}
+
+.cyber-bg {
+  position: relative;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 70% 0%, rgba(0, 255, 65, 0.11), transparent 24rem),
+    linear-gradient(180deg, rgba(0, 255, 65, 0.04), rgba(0, 0, 0, 0.96) 44%),
+    #000;
+}
+
+.cyber-bg::before {
+  content: "0101 root@0xaudit gen_call validator quorum exploit invariant solidity mempool audit consensus";
   pointer-events: none;
   position: absolute;
   inset: 0;
   overflow: hidden;
-  color: rgba(0, 255, 136, 0.08);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 18px;
-  line-height: 1.8;
-  letter-spacing: 0;
-  word-spacing: 28px;
-  transform: skewY(-5deg);
+  color: rgba(0, 255, 65, 0.055);
+  font-size: 16px;
+  line-height: 2.1;
+  word-spacing: 22px;
+  transform: skewY(-7deg);
 }
 
-.terminal-window {
-  border: 1px solid #1d2a24;
-  background: rgba(5, 10, 7, 0.92);
-  border-radius: 8px;
-  box-shadow: 0 0 40px rgba(0, 255, 136, 0.09), inset 0 0 24px rgba(0, 255, 136, 0.03);
-}
-
-.terminal-scan {
+.terminal-card {
   position: relative;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background:
+    repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0.025) 1px, transparent 1px, transparent 7px),
+    linear-gradient(180deg, rgba(0, 255, 65, 0.08), rgba(0, 0, 0, 0.72)),
+    var(--panel);
+  box-shadow: 0 0 10px rgba(0, 255, 65, 0.24), inset 0 0 18px rgba(0, 255, 65, 0.08);
+  backdrop-filter: blur(10px);
 }
 
-.terminal-scan::after {
+.terminal-card::after {
   content: "";
   pointer-events: none;
   position: absolute;
   inset: 0;
-  background: repeating-linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.02) 0,
-    rgba(255, 255, 255, 0.02) 1px,
-    transparent 1px,
-    transparent 6px
-  );
+  border: 1px solid rgba(0, 255, 65, 0.2);
+  transform: translate(3px, 3px);
 }
 
-.scanline {
+.terminal-title {
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--green);
+  text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+}
+
+.terminal-label {
+  text-transform: uppercase;
+  font-size: 11px;
+  color: var(--green-dim);
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid currentColor;
+  padding: 2px 7px;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.glitch-button {
   position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  border: 1px solid var(--green);
+  background: var(--green);
+  color: var(--black);
+  padding: 0 18px;
+  font-weight: 900;
+  text-transform: uppercase;
+  box-shadow: 0 0 16px rgba(0, 255, 65, 0.45);
+  isolation: isolate;
 }
 
-.scanline::after {
-  content: "";
-  pointer-events: none;
+.glitch-button::before,
+.glitch-button::after {
+  content: attr(data-text);
   position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, transparent, rgba(0, 255, 136, 0.05), transparent);
-  transform: translateY(-100%);
-  animation: scan 6s linear infinite;
+  inset: -1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--green);
+  color: var(--black);
+  opacity: 0;
 }
 
-@keyframes scan {
+.glitch-button::before {
+  transform: translate(2px, -1px);
+  color: #000;
+  text-shadow: -2px 0 var(--red);
+}
+
+.glitch-button::after {
+  transform: translate(-2px, 1px);
+  text-shadow: 2px 0 #00a2ff;
+}
+
+.glitch-button:hover::before,
+.glitch-button:hover::after {
+  opacity: 0.9;
+  animation: glitch-slice 520ms steps(2, end) infinite;
+}
+
+.ghost-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  border: 1px solid var(--line);
+  background: rgba(0, 0, 0, 0.76);
+  color: var(--green);
+  padding: 0 18px;
+  text-transform: uppercase;
+}
+
+.typewriter {
+  overflow: hidden;
+  border-right: 2px solid var(--green);
+  white-space: nowrap;
+  animation: typing 3.2s steps(46, end), cursor-blink 800ms step-end infinite;
+}
+
+.boot-row {
+  opacity: 0;
+  transform: translateY(8px);
+  animation: boot 560ms ease forwards;
+}
+
+.boot-row:nth-child(2) { animation-delay: 170ms; }
+.boot-row:nth-child(3) { animation-delay: 340ms; }
+.boot-row:nth-child(4) { animation-delay: 510ms; }
+.boot-row:nth-child(5) { animation-delay: 680ms; }
+.boot-row:nth-child(6) { animation-delay: 850ms; }
+
+.compute-load {
+  display: grid;
+  grid-template-columns: repeat(24, 1fr);
+  gap: 3px;
+}
+
+.compute-load span {
+  height: 9px;
+  background: rgba(0, 255, 65, 0.18);
+  border: 1px solid rgba(0, 255, 65, 0.2);
+}
+
+.compute-load span:nth-child(-n + 17) {
+  background: var(--green);
+  box-shadow: 0 0 8px rgba(0, 255, 65, 0.65);
+}
+
+.critical-text {
+  color: var(--red);
+  text-shadow: 0 0 10px rgba(255, 0, 0, 0.45);
+}
+
+.muted-terminal {
+  color: var(--gray);
+}
+
+.code-terminal {
+  border: 1px solid rgba(0, 255, 65, 0.35);
+  background: #020402;
+  color: #b7ffc8;
+}
+
+.bottom-nav {
+  border-top: 1px solid var(--line);
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(12px);
+}
+
+@keyframes typing {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+@keyframes cursor-blink {
+  50% { border-color: transparent; }
+}
+
+@keyframes boot {
   to {
-    transform: translateY(100%);
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes crt-scan {
+  from { transform: translateY(-40vh); }
+  to { transform: translateY(120vh); }
+}
+
+@keyframes glitch-slice {
+  0% { clip-path: inset(0 0 82% 0); }
+  20% { clip-path: inset(18% 0 44% 0); }
+  40% { clip-path: inset(62% 0 11% 0); }
+  60% { clip-path: inset(37% 0 35% 0); }
+  80% { clip-path: inset(5% 0 72% 0); }
+  100% { clip-path: inset(70% 0 0 0); }
+}
+
+@media (max-width: 640px) {
+  .typewriter {
+    white-space: normal;
+    border-right: 0;
+    animation: boot 560ms ease forwards;
   }
 }

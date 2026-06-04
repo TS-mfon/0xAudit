@@ -36,6 +36,7 @@
 
 ## Live Deployment
 - GenLayer StudioNet engine: `0x44bD99017b81B2FC044f3b4DD24C0bfA9715301D`
-- Vercel production alias: `https://frontend-alpha-pied-17.vercel.app`
-- Verified contract state: `22` audits and `193` findings.
+- Vercel production alias: `https://0xaudit-genlayer.vercel.app`
+- Requested alias note: `0xAudit.vercel.app` was unavailable, so fallback alias was used.
+- Verified contract state: `28` audits and `239` findings.
 - GenVM note: static lint passed; SDK validation substep still returns `HTTP Error 404: Not Found` from the validator tooling.

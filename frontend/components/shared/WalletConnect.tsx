@@ -21,15 +21,15 @@ export function WalletConnectButton() {
 
   if (isConnected) {
     return (
-      <button className="rounded border border-strong/40 bg-strong/10 px-4 py-2 font-mono text-sm text-strong" onClick={() => disconnect()}>
-        Disconnect {address?.slice(0, 6)}...
+      <button className="ghost-button text-sm" onClick={() => disconnect()}>
+        DISCONNECT {address?.slice(0, 6)}...
       </button>
     );
   }
 
   return (
-    <button className="rounded border border-strong/50 bg-strong px-4 py-2 font-mono text-sm font-bold text-obsidian" onClick={() => connect({ connector: connectors[0] })}>
-      Connect Wallet
+    <button className="glitch-button text-sm" data-text="CONNECT_WALLET" onClick={() => connect({ connector: connectors[0] })}>
+      CONNECT_WALLET
     </button>
   );
 }

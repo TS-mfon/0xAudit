@@ -6,7 +6,7 @@ import { FindingCard } from "./FindingCard";
 
 export function FindingsList({ findings }: { findings: Finding[] }) {
   if (!findings?.length) {
-    return <p className="panel p-4 text-foreground-muted">No findings yet. The three-agent panel will stream results here.</p>;
+    return <p className="terminal-card p-4 text-[#00FF41]/60">NO_FINDINGS_STREAMED_YET</p>;
   }
 
   const sorted = [...findings].sort((a, b) => severityOrder.indexOf(a.severity) - severityOrder.indexOf(b.severity));

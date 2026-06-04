@@ -23,6 +23,13 @@ export type AuditRecord = {
   suggestions: string[];
 };
 
+export type AuditSubmitResult = {
+  txHash: string;
+  auditId: string;
+  previousTotal: number;
+  status: "pending" | "completed";
+};
+
 function chain() {
   const rpc = process.env.GENLAYER_RPC_URL || "https://studio.genlayer.com/api";
   return {
@@ -52,6 +59,25 @@ function clientWithAccount() {
 
 function clientReadOnly() {
   return createClient({ chain: chain() });
+}
+
+function isRetryableRpcError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error);
+  return /server busy|execution slots|fetch failed|EAI_AGAIN|ETIMEDOUT|timeout|429|503/i.test(message);
+}
+
+async function withReadRetry<T>(operation: () => Promise<T>, retries = 5): Promise<T> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt <= retries; attempt += 1) {
+    try {
+      return await operation();
+    } catch (error) {
+      lastError = error;
+      if (!isRetryableRpcError(error) || attempt === retries) break;
+      await new Promise((resolve) => setTimeout(resolve, 700 + attempt * 650));
+    }
+  }
+  throw lastError;
 }
 
 function toNumber(value: unknown) {
@@ -115,47 +141,45 @@ function normalizeAudit(raw: any, findings: unknown[] = [], invariants: string[]
   };
 }
 
-export async function submitAuditToGenLayer(contractCode: string, sourceLabel = "paste") {
+export async function submitAuditToGenLayer(contractCode: string, sourceLabel = "paste"): Promise<AuditSubmitResult> {
   const client = clientWithAccount();
-  const before = toNumber((await getAuditStats()).total_audits);
+  const previousTotal = toNumber((await getAuditStats()).total_audits);
   const txHash = await client.writeContract({
     address: engineAddress(),
     functionName: "submit_audit",
     args: [contractCode, sourceLabel],
     value: 0n,
   });
-  await waitForAuditCommit(before);
-  const recent = await getRecentAuditIds();
-  const auditId = recent[recent.length - 1] || "";
-  return { txHash, auditId };
+
+  return { txHash, auditId: "", previousTotal, status: "pending" };
 }
 
 export async function getAuditFromGenLayer(auditId: string): Promise<AuditRecord> {
   const client = clientReadOnly();
-  const audit = await client.readContract({
+  const audit = await withReadRetry(() => client.readContract({
     address: engineAddress(),
     functionName: "get_audit",
     args: [auditId],
     jsonSafeReturn: true,
-  });
-  const findings = await client.readContract({
+  }));
+  const findings = await withReadRetry(() => client.readContract({
     address: engineAddress(),
     functionName: "get_audit_findings",
     args: [auditId],
     jsonSafeReturn: true,
-  });
-  const invariants = await client.readContract({
+  }));
+  const invariants = await withReadRetry(() => client.readContract({
     address: engineAddress(),
     functionName: "get_audit_invariants",
     args: [auditId],
     jsonSafeReturn: true,
-  });
-  const suggestions = await client.readContract({
+  }));
+  const suggestions = await withReadRetry(() => client.readContract({
     address: engineAddress(),
     functionName: "get_audit_suggestions",
     args: [auditId],
     jsonSafeReturn: true,
-  });
+  }));
   return normalizeAudit(
     audit,
     parseArray(findings),
@@ -166,12 +190,12 @@ export async function getAuditFromGenLayer(auditId: string): Promise<AuditRecord
 
 export async function getRecentAuditIds(): Promise<string[]> {
   const client = clientReadOnly();
-  const result = await client.readContract({
+  const result = await withReadRetry(() => client.readContract({
     address: engineAddress(),
     functionName: "get_recent_audit_ids",
     args: [],
     jsonSafeReturn: true,
-  });
+  }));
   return Array.isArray(result) ? result.map(String) : [];
 }
 
@@ -180,27 +204,59 @@ export async function getRecentAudits(limit = 20): Promise<AuditRecord[]> {
   const recent = ids.slice(Math.max(0, ids.length - limit)).reverse();
   const audits: AuditRecord[] = [];
   for (const id of recent) {
-    audits.push(await getAuditFromGenLayer(id));
+    try {
+      audits.push(await getAuditFromGenLayer(id));
+    } catch {
+      // StudioNet can temporarily reject deep detail reads under load. Keep the feed alive.
+    }
+  }
+  return audits;
+}
+
+export async function getRecentAuditSummaries(limit = 8): Promise<AuditRecord[]> {
+  const client = clientReadOnly();
+  const ids = await getRecentAuditIds();
+  const recent = ids.slice(Math.max(0, ids.length - limit)).reverse();
+  const audits: AuditRecord[] = [];
+  for (const id of recent) {
+    try {
+      const audit = await withReadRetry(() => client.readContract({
+        address: engineAddress(),
+        functionName: "get_audit",
+        args: [id],
+        jsonSafeReturn: true,
+      }), 3);
+      audits.push(normalizeAudit(audit));
+    } catch {
+      // Partial failure should not blank the monitor.
+    }
   }
   return audits;
 }
 
 export async function getAuditStats() {
   const client = clientReadOnly();
-  const result = await client.readContract({
+  const result = await withReadRetry(() => client.readContract({
     address: engineAddress(),
     functionName: "get_stats",
     args: [],
     jsonSafeReturn: true,
-  });
+  }));
   return asObject(result);
 }
 
-async function waitForAuditCommit(previousCount: number) {
-  for (let attempt = 1; attempt <= 90; attempt += 1) {
-    const stats = await getAuditStats();
-    if (toNumber(stats.total_audits) > previousCount) return;
-    await new Promise((resolve) => setTimeout(resolve, 5000));
+export async function findAuditByTxHash(txHash: string, limit = 24): Promise<string> {
+  const ids = await getRecentAuditIds();
+  const recent = ids.slice(Math.max(0, ids.length - limit)).reverse();
+  const normalized = txHash.toLowerCase();
+  for (const id of recent) {
+    try {
+      const audit = await getAuditFromGenLayer(id);
+      const knownHash = (audit as AuditRecord & { tx_hash?: string }).tx_hash;
+      if (knownHash && knownHash.toLowerCase() === normalized) return id;
+    } catch {
+      // Fallback below handles contracts that do not store tx hashes.
+    }
   }
-  throw new Error("Audit submitted but contract state did not update before timeout");
+  return "";
 }

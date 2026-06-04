@@ -18,8 +18,9 @@ export async function POST(req: Request) {
     return NextResponse.json({
       audit_id: result.auditId,
       tx_hash: result.txHash,
-      status: "completed",
-      next_poll: `/api/audit/status/${result.auditId}`,
+      previous_total: result.previousTotal,
+      status: result.status,
+      next_poll: result.auditId ? `/api/audit/status/${result.auditId}` : "/api/audit/recent?limit=1",
     });
   } catch (err) {
     const { code, status } = errorResponse("ERR_INTERNAL", 500);

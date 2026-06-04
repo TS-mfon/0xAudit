@@ -4,6 +4,8 @@ Decentralized Smart Contract Auditing Infrastructure.
 
 0xAudit V1 is a paste-code Solidity audit console backed by a live GenLayer StudioNet intelligent contract. The server submits audits with a platform key, the contract stores results, and the frontend reads activity from contract state.
 
+Live app: https://0xaudit-genlayer.vercel.app
+
 ## Structure
 
 ```
