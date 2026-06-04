@@ -5,6 +5,11 @@ import { CyberNav } from "../components/shared/CyberNav";
 export const metadata = {
   title: "0xAudit",
   description: "Decentralized Smart Contract Auditing Infrastructure",
+  icons: {
+    icon: "/icon.svg",
+    shortcut: "/icon.svg",
+    apple: "/apple-icon.svg",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
